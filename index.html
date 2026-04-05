@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#09090b">
+    <title>MONEY-TALK</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #09090b;
+            color: #fafafa;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a1a1aa;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 16px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .module {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .module:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .module h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #fafafa;
+        }
+
+        .lesson {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .lesson:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .lesson h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #e4e4e7;
+        }
+
+        .lesson-content {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #d4d4d8;
+            line-height: 1.6;
+        }
+
+        .lesson-content.active {
+            display: block;
+        }
+
+        .lesson-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .free-badge {
+            display: inline-block;
+            background: rgba(6, 182, 212, 0.2);
+            color: #06b6d4;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fafafa;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+
+        .user-info strong {
+            color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 MONEY-TALK</h1>
+            <p>Обучение продажам</p>
+        </div>
+
+        <div id="userInfo" class="user-info" style="display: none;">
+            Привет, <strong id="userName"></strong>!
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Загрузка контента...</p>
+        </div>
+
+        <div id="content"></div>
+    </div>
+
+    <script>
+        // Конфигурация
+        const CONFIG = {
+            // Замените на ID вашей Google Таблицы
+            SHEET_ID: '1NjvedtkMeDnrEYUQKrejQCLUXN8FDDydhUk8tr4U4zY',
+            // Названия вкладок
+            MODULES_SHEET: 'Modules',
+            LESSONS_SHEET: 'Lessons'
+        };
+
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            
+            // Показываем информацию о пользователе
+            if (tg.initDataUnsafe?.user) {
+                const user = tg.initDataUnsafe.user;
+                document.getElementById('userName').textContent = user.first_name || 'Друг';
+                document.getElementById('userInfo').style.display = 'block';
+            }
+        }
+
+        // Функция для загрузки данных из Google Sheets
+        async function loadFromGoogleSheets(sheetName) {
+            const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                // Убираем обертку Google Visualization API
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                
+                const rows = json.table.rows;
+                const data = rows.map(row => {
+                    return row.c.map(cell => cell ? cell.v : null);
+                });
+                
+                return data;
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                throw error;
+            }
+        }
+
+        // Функция для отображения модулей
+        async function showModules() {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+            
+            try {
+                loading.style.display = 'block';
+                content.innerHTML = '';
+
+                // Загружаем модули
+                const modulesData = await loadFromGoogleSheets(CONFIG.MODULES_SHEET);
+                const lessonsData = await loadFromGoogleSheets(CONFIG.LESSONS_SHEET);
+
+                loading.style.display = 'none';
+
+                if (modulesData.length === 0) {
+                    content.innerHTML = '<div class="error">Нет доступных модулей</div>';
+                    return;
+                }
+
+                // Группируем уроки по модулям
+                const lessonsByModule = {};
+                lessonsData.forEach(lesson => {
+                    const moduleId = lesson[1]; // module_id
+                    if (!lessonsByModule[moduleId]) {
+                        lessonsByModule[moduleId] = [];
+                    }
+                    lessonsByModule[moduleId].push({
+                        id: lesson[0],
+                        title: lesson[2],
+                        content: lesson[3],
+                        order: lesson[4]
+                    });
+                });
+
+                // Отображаем модули
+                modulesData.forEach(module => {
+                    const moduleId = module[0];
+                    const title = module[1];
+                    const lessons = lessonsByModule[moduleId] || [];
+
+                    const moduleDiv = document.createElement('div');
+                    moduleDiv.className = 'module';
+                    moduleDiv.innerHTML = `
+                        <h2>${title}</h2>
+                        <p style="color: #a1a1aa; font-size: 14px;">${lessons.length} уроков</p>
+                    `;
+                    
+                    moduleDiv.onclick = () => showLessons(moduleId, title, lessons);
+                    content.appendChild(moduleDiv);
+                });
+
+            } catch (error) {
+                loading.style.display = 'none';
+                content.innerHTML = `
+                    <div class="error">
+                        <strong>Ошибка загрузки данных</strong><br>
+                        Проверьте настройки Google Sheets.<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Функция для отображения уроков модуля
+        function showLessons(moduleId, moduleTitle, lessons) {
+            const content = document.getElementById('content');
+            
+            content.innerHTML = `
+                <button class="back-btn" onclick="showModules()">← Назад к модулям</button>
+                <div class="module">
+                    <h2>${moduleTitle}</h2>
+                </div>
+            `;
+
+            lessons.sort((a, b) => a.order - b.order);
+
+            lessons.forEach((lesson, index) => {
+                const lessonDiv = document.createElement('div');
+                lessonDiv.className = 'lesson';
+                
+                const isFree = index < 2; // Первые 2 урока бесплатно
+                
+                lessonDiv.innerHTML = `
+                    <div>
+                        <span class="lesson-number">${index + 1}</span>
+                        <span style="font-weight: 600;">${lesson.title}</span>
+                        ${isFree ? '<span class="free-badge">Бесплатно</span>' : ''}
+                    </div>
+                    <div class="lesson-content" id="lesson-${lesson.id}">
+                        ${formatContent(lesson.content)}
+                    </div>
+                `;
+                
+                lessonDiv.onclick = (e) => {
+                    if (e.target.classList.contains('lesson-content')) return;
+                    toggleLesson(lesson.id);
+                };
+                
+                content.appendChild(lessonDiv);
+            });
+        }
+
+        // Функция для переключения отображения урока
+        function toggleLesson(lessonId) {
+            const lessonContent = document.getElementById(`lesson-${lessonId}`);
+            lessonContent.classList.toggle('active');
+            
+            // Haptic feedback для Telegram
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        // Функция для форматирования контента (простой Markdown)
+        function formatContent(content) {
+            if (!content) return '';
+            
+            return content
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^# (.*?)$/gm, '<h2 style="margin: 16px 0 8px; font-size: 20px;">$1</h2>')
+                .replace(/^## (.*?)$/gm, '<h3 style="margin: 12px 0 6px; font-size: 18px;">$1</h3>');
+        }
+
+        // Запускаем приложение
+        showModules();
+    </script>
+</body>
+</html>
